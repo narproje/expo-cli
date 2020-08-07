@@ -43,7 +43,7 @@ export class IosApi {
 
   withProjectContext(ctx: Context): IosApi {
     invariant(ctx.hasProjectContext, 'Project context required');
-    this.username = ctx.manifest.owner ?? this.username;
+    this.username = ctx.projectOwner;
     return this;
   }
 
