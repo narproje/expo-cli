@@ -1,5 +1,4 @@
-import { getConfig } from '@expo/config';
-import { ApiV2, User, UserManager } from '@expo/xdl';
+import { ApiV2 } from '@expo/xdl';
 import chalk from 'chalk';
 import delayAsync from 'delay-async';
 import fs from 'fs-extra';
@@ -14,12 +13,12 @@ import { ensureProjectExistsAsync } from '../../../projects';
 import { UploadType, uploadAsync } from '../../../uploads';
 import { createProgressTracker } from '../../utils/progress';
 import { platformDisplayNames } from '../constants';
-import { Build, BuildCommandPlatform, BuildStatus } from '../types';
+import { Build, BuildCommandPlatform, BuildStatus, Builder, BuilderContext } from '../types';
+import createBuilderContextAsync from '../utils/createBuilderContextAsync';
+import { ensureGitStatusIsCleanAsync, makeProjectTarballAsync } from '../utils/git';
+import { printBuildResults, printLogsUrls } from '../utils/misc';
 import AndroidBuilder from './builders/AndroidBuilder';
 import iOSBuilder from './builders/iOSBuilder';
-import { Builder, BuilderContext } from './types';
-import { ensureGitStatusIsCleanAsync, makeProjectTarballAsync } from './utils/git';
-import { printBuildResults, printLogsUrls } from './utils/misc';
 
 interface BuildOptions {
   platform: BuildCommandPlatform;
@@ -70,40 +69,6 @@ async function buildAction(projectDir: string, options: BuildOptions): Promise<v
     );
     printBuildResults(builds);
   }
-}
-
-async function createBuilderContextAsync(
-  projectDir: string,
-  eas: EasConfig,
-  {
-    platform = BuildCommandPlatform.ALL,
-    nonInteractive = false,
-    skipCredentialsCheck = false,
-    skipProjectConfiguration = false,
-  }: {
-    platform?: BuildCommandPlatform;
-    nonInteractive?: boolean;
-    skipCredentialsCheck?: boolean;
-    skipProjectConfiguration?: boolean;
-  }
-): Promise<BuilderContext> {
-  const user: User = await UserManager.ensureLoggedInAsync();
-  const { exp } = getConfig(projectDir);
-  const accountName = exp.owner || user.username;
-  const projectName = exp.slug;
-
-  return {
-    eas,
-    projectDir,
-    user,
-    accountName,
-    projectName,
-    exp,
-    platform,
-    nonInteractive,
-    skipCredentialsCheck,
-    skipProjectConfiguration,
-  };
 }
 
 async function startBuildsAsync(

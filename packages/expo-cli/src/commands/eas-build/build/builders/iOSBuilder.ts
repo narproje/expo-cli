@@ -17,9 +17,9 @@ import {
 } from '../../../../easJson';
 import log from '../../../../log';
 import prompts from '../../../../prompts';
+import { Builder, BuilderContext } from '../../types';
+import * as gitUtils from '../../utils/git';
 import { ensureCredentialsAsync } from '../credentials';
-import { Builder, BuilderContext } from '../types';
-import * as gitUtils from '../utils/git';
 
 interface CommonJobProperties {
   platform: Platform.iOS;
@@ -115,7 +115,7 @@ class iOSBuilder implements Builder {
           log(`${chalk.green(figures.tick)} Successfully committed the configuration changes.`);
         } catch (e) {
           throw new Error(
-            "Aborting, run the build command once you're ready. Make sure to commit any changes you've made."
+            "Aborting, run the command again once you're ready. Make sure to commit any changes you've made."
           );
         }
       } else {

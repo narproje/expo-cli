@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 
 import buildAction from './build/action';
+import initAction from './init/action';
 import statusAction from './status/action';
 
 export default function (program: Command) {
@@ -17,7 +18,7 @@ export default function (program: Command) {
     .description('Build an app binary for your project.')
     .option(
       '-p --platform <platform>',
-      'Build for specified platform: ios, android, all',
+      'Build for the specified platform: ios, android, all',
       /^(all|android|ios)$/i
     )
     .option('--skip-credentials-check', 'Skip checking credentials', false)
@@ -25,6 +26,18 @@ export default function (program: Command) {
     .option('--no-wait', 'Exit immediately after scheduling build', false)
     .option('--profile <profile>', 'Build profile', 'release')
     .asyncActionProjectDir(buildAction, { checkConfig: true });
+
+  program
+    .command('eas:build:init [project-dir]')
+    .description('Initialize build configuration for your project.')
+    .option(
+      '-p --platform <platform>',
+      'Initialize configuration for the specified platform: ios, android, all',
+      /^(all|android|ios)$/i
+    )
+    .option('--skip-credentials-check', 'Skip checking credentials', false)
+    .option('--profile <profile>', 'Build profile', 'release')
+    .asyncActionProjectDir(initAction, { checkConfig: true });
 
   program
     .command('eas:build:status [project-dir]')
