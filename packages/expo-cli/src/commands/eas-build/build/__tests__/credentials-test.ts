@@ -44,6 +44,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(src).toBe('local');
@@ -57,6 +58,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(src).toBe('remote');
@@ -71,6 +73,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(0);
@@ -89,6 +92,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(1);
@@ -107,10 +111,29 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(1);
       expect(src).toBe('remote');
+    });
+    it('should use local when local and remote are not the same (skip credentials check)', async () => {
+      const provider = createMockCredentialsProvider({
+        hasRemote: true,
+        hasLocal: true,
+        isLocalSynced: false,
+      });
+
+      const src = await ensureCredentialsAsync(
+        provider,
+        Workflow.Generic,
+        CredentialsSource.AUTO,
+        false,
+        true
+      );
+
+      expect(prompts).toHaveBeenCalledTimes(0);
+      expect(src).toBe('local');
     });
     it('should should throw an error when local and remote are not the same (non interactive)', async () => {
       const provider = createMockCredentialsProvider({
@@ -122,7 +145,13 @@ describe('ensureCredentialsAsync', () => {
       expect.assertions(2);
 
       try {
-        await ensureCredentialsAsync(provider, Workflow.Generic, CredentialsSource.AUTO, true);
+        await ensureCredentialsAsync(
+          provider,
+          Workflow.Generic,
+          CredentialsSource.AUTO,
+          true,
+          false
+        );
       } catch (e) {
         expect(e.message).toMatch(
           'Contents of your local credentials.json for Android are not the same as credentials on Expo servers'
@@ -144,6 +173,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(1);
@@ -161,7 +191,13 @@ describe('ensureCredentialsAsync', () => {
       expect.assertions(2);
 
       try {
-        await ensureCredentialsAsync(provider, Workflow.Generic, CredentialsSource.AUTO, false);
+        await ensureCredentialsAsync(
+          provider,
+          Workflow.Generic,
+          CredentialsSource.AUTO,
+          false,
+          false
+        );
       } catch (e) {
         expect(e.message).toMatch(
           'Aborting build process, credentials are not configured for Android'
@@ -170,7 +206,53 @@ describe('ensureCredentialsAsync', () => {
 
       expect(prompts).toHaveBeenCalledTimes(1);
     });
-    it('should should throw an error when local or remote are not present (non interactive)', async () => {
+    it('should ask when local is not present (skip credentials check, confirm)', async () => {
+      const provider = createMockCredentialsProvider({
+        hasRemote: true,
+        hasLocal: false,
+        isLocalSynced: false,
+      });
+      (prompts as any).mockImplementation(() => {
+        return { confirm: true };
+      });
+      const src = await ensureCredentialsAsync(
+        provider,
+        Workflow.Generic,
+        CredentialsSource.AUTO,
+        false,
+        true
+      );
+      expect(prompts).toHaveBeenCalledTimes(1);
+      expect(src).toBe('remote');
+    });
+    it('should ask when local is not present (skip credentials check, not confirm)', async () => {
+      const provider = createMockCredentialsProvider({
+        hasRemote: true,
+        hasLocal: false,
+        isLocalSynced: false,
+      });
+      (prompts as any).mockImplementation(() => {
+        return { confirm: false };
+      });
+      expect.assertions(2);
+
+      try {
+        await ensureCredentialsAsync(
+          provider,
+          Workflow.Generic,
+          CredentialsSource.AUTO,
+          false,
+          true
+        );
+      } catch (e) {
+        expect(e.message).toMatch(
+          'Aborting build process, credentials are not configured for Android'
+        );
+      }
+
+      expect(prompts).toHaveBeenCalledTimes(1);
+    });
+    it('should throw an error when local or remote are not present (non interactive)', async () => {
       const provider = createMockCredentialsProvider({
         hasRemote: false,
         hasLocal: false,
@@ -183,7 +265,13 @@ describe('ensureCredentialsAsync', () => {
       expect.assertions(2);
 
       try {
-        await ensureCredentialsAsync(provider, Workflow.Generic, CredentialsSource.AUTO, true);
+        await ensureCredentialsAsync(
+          provider,
+          Workflow.Generic,
+          CredentialsSource.AUTO,
+          true,
+          false
+        );
       } catch (e) {
         expect(e.message).toMatch('Credentials for this app are not configured');
       }
@@ -202,6 +290,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Managed,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(src).toBe('local');
@@ -215,6 +304,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Managed,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(src).toBe('remote');
@@ -229,6 +319,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Managed,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(0);
@@ -245,6 +336,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Managed,
         CredentialsSource.AUTO,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(0);
@@ -263,6 +355,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.LOCAL,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(0);
@@ -281,6 +374,7 @@ describe('ensureCredentialsAsync', () => {
         provider,
         Workflow.Generic,
         CredentialsSource.REMOTE,
+        false,
         false
       );
       expect(prompts).toHaveBeenCalledTimes(0);

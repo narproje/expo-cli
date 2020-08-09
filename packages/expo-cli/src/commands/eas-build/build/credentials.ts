@@ -8,7 +8,8 @@ import { platformDisplayNames } from '../constants';
 async function ensureCredentialsAutoAsync(
   provider: CredentialsProvider,
   workflow: Workflow,
-  nonInteractive: boolean
+  nonInteractive: boolean,
+  skipCredentialsCheck: boolean
 ): Promise<CredentialsSource.LOCAL | CredentialsSource.REMOTE> {
   const platform = platformDisplayNames[provider.platform];
   switch (workflow) {
@@ -20,7 +21,10 @@ async function ensureCredentialsAutoAsync(
       }
     case Workflow.Generic: {
       const hasLocal = await provider.hasLocalAsync();
-      const hasRemote = await provider.hasRemoteAsync();
+      const hasRemote = skipCredentialsCheck ? false : await provider.hasRemoteAsync();
+      if (skipCredentialsCheck) {
+        log('Skipping credentials check');
+      }
       if (hasRemote && hasLocal) {
         if (!(await provider.isLocalSyncedAsync())) {
           if (nonInteractive) {
@@ -82,7 +86,8 @@ export async function ensureCredentialsAsync(
   provider: CredentialsProvider,
   workflow: Workflow,
   src: CredentialsSource,
-  nonInteractive: boolean
+  nonInteractive: boolean,
+  skipCredentialsCheck: boolean
 ): Promise<CredentialsSource.LOCAL | CredentialsSource.REMOTE> {
   switch (src) {
     case CredentialsSource.LOCAL:
@@ -90,6 +95,11 @@ export async function ensureCredentialsAsync(
     case CredentialsSource.REMOTE:
       return CredentialsSource.REMOTE;
     case CredentialsSource.AUTO:
-      return await ensureCredentialsAutoAsync(provider, workflow, nonInteractive);
+      return await ensureCredentialsAutoAsync(
+        provider,
+        workflow,
+        nonInteractive,
+        skipCredentialsCheck
+      );
   }
 }

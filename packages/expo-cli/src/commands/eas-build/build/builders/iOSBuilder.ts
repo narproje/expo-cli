@@ -72,7 +72,8 @@ class iOSBuilder implements Builder {
       provider,
       this.buildProfile.workflow,
       this.buildProfile.credentialsSource,
-      this.ctx.nonInteractive
+      this.ctx.nonInteractive,
+      this.ctx.skipCredentialsCheck
     );
     this.credentials = await provider.getCredentialsAsync(credentialsSource);
   }
